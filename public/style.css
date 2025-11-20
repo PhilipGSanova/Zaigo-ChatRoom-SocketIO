@@ -1,0 +1,193 @@
+:root {
+  --bg: #f6f7fb;
+  --accent: #2b6ef6;
+  --muted: #6b7280;
+
+  --card-bg: #ffffff;
+  --message-bg: #eef2ff;
+  --border: #eee;
+  --hover: #f3f4f6;
+}
+
+/* ------------------ LIGHT MODE (default) ------------------ */
+body {
+  margin: 0;
+  font-family: Inter, Segoe UI, Roboto, Arial;
+  background: var(--bg);
+  color: #111;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  padding: 16px;
+  background: var(--card-bg);
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.06);
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-area #chatHeader {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.messages {
+  flex: 1;
+  padding: 12px;
+  overflow: auto;
+}
+
+.message {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--message-bg);
+}
+
+.btn {
+    margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.compose {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+}
+
+.compose input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.compose button,
+.user-setup button {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+}
+
+.user-setup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.user-setup input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+#usersList,
+#roomsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#usersList li,
+#roomsList li {
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#usersList li:hover {
+  background: var(--hover);
+}
+
+.selected {
+  background: #e0e7ff;
+}
+
+
+/* ------------------ DARK MODE ------------------ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --card-bg: #161b22;
+    --message-bg: #1e2633;
+    --border: #2a3039;
+    --muted: #9ca3af;
+    --hover: #2c3440;
+  }
+
+  body {
+    background: var(--bg);
+    color: #e5e7eb;
+  }
+
+  .sidebar {
+    background: var(--card-bg);
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.45);
+  }
+
+  #usersList li:hover {
+    background: var(--hover);
+  }
+
+  .selected {
+    background: #334155;
+  }
+
+  .chat-area #chatHeader {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compose {
+    border-top: 1px solid var(--border);
+  }
+
+  .compose input,
+  .user-setup input {
+    background: #11161f;
+    border: 1px solid #2a3039;
+    color: #f1f9f1;
+  }
+
+  .room-controls input {
+    background: #11161f;
+    border: 1px solid #2a3039;
+    color: #f1f5f9;
+  }
+
+  .message {
+    background: var(--dark-message-bg);
+    color: #f1f5f9;
+  }
+
+  .meta {
+    color: var(--muted);
+  }
+
+  #usersList li,
+  #roomsList li {
+    color: #f1f5f9;
+  }
+}
