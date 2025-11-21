@@ -42,22 +42,51 @@ io.on('connection', (socket) => {
     console.log(`Private from ${sender.username} -> ${toSocketId}: ${text}`);
   });
 
+  //JOIN ROOM
   socket.on('join_room', (roomName) => {
     socket.join(roomName);
     const sender = users.get(socket.id) || { username: 'Unknown' };
-    io.to(roomName).emit('room_message', { room: roomName, text: `${sender.username} joined the room.`, time: Date.now() });
+    io.to(roomName).emit('room_message', {
+      room: roomName,
+      text: `${sender.username} joined the room.`,
+      time: Date.now()
+    });
     broadcastUsers();
     console.log(`${sender.username} joined room ${roomName}`);
   });
 
+  //LEAVE ROOM
   socket.on('leave_room', (roomName) => {
     socket.leave(roomName);
     const sender = users.get(socket.id) || { username: 'Unknown' };
-    io.to(roomName).emit('room_message', { room: roomName, text: `${sender.username} left the room.`, time: Date.now() });
+    io.to(roomName).emit('room_message', {
+      room: roomName,
+      text: `${sender.username} left the room.`,
+      time: Date.now()
+    });
     broadcastUsers();
     console.log(`${sender.username} left room ${roomName}`);
   });
 
+  socket.onAny((event, data) => {
+    console.log("EVENT RECEIVED:", event, data);
+  });
+
+  socket.on('room_message', ({ room, text }) => {
+    if (!room || !text) return;
+
+    const sender = users.get(socket.id) || { username: 'Unknown' };
+    console.log(`Room message in ${room} from ${sender.username}: ${text}`);
+
+    io.to(room).emit('room_message', {
+      room,
+      from: sender.username,
+      text,
+      time: Date.now()
+    });
+  });
+
+  // Disconnect
   socket.on('disconnect', () => {
     const user = users.get(socket.id);
     if (user) {
@@ -68,12 +97,12 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Utility: send updated users list
   function broadcastUsers() {
-    const list = Array.from(users.entries()).map(([socketId, info]) => ({ socketId, username: info.username, userId: info.userId }));
+    const list = Array.from(users.entries())
+      .map(([socketId, info]) => ({ socketId, username: info.username, userId: info.userId }));
+
     io.emit('users', list);
   }
 });
 
-// ✅ LISTEN OUTSIDE io.on
 server.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
