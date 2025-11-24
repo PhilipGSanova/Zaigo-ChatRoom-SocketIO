@@ -1,0 +1,258 @@
+/* src/index.css */
+
+/* Google font (optional) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+/* Tailwind base/components/utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root tokens */
+:root {
+  --bg: #0f1724;           /* page background (dark) */
+  --surface: #0b1220;      /* panel surfaces */
+  --muted: #94a3b8;        /* muted text */
+  --text: #e6eef6;         /* main text */
+  --accent: #2563eb;       /* primary accent (blue) */
+  --accent-2: #7c3aed;     /* secondary accent */
+  --success: #10b981;
+  --danger:  #ef4444;
+
+  /* message bubble colors */
+  --msg-sent: #1e293b;
+  --msg-recv: #0b1220;
+  --msg-sent-text: #e6eef6;
+  --msg-recv-text: #d1d5db;
+}
+
+/* Light theme overrides (if you add a .light class to <html> or <body>) */
+.light {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --text: #0b1220;
+  --accent: #2563eb;
+  --accent-2: #7c3aed;
+  --msg-sent: #2563eb;
+  --msg-recv: #f1f5f9;
+  --msg-sent-text: #ffffff;
+  --msg-recv-text: #0b1220;
+}
+
+/* Global base styles */
+html, body, #root {
+  height: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.35;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Utility: nice scrollbars for desktop */
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Component helpers (used in chat components) */
+
+/* Chat container (wraps sidebar + main) */
+.chat-shell {
+  min-height: 100vh;
+  display: flex;
+  gap: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Panel card / surface */
+.surface {
+  background-color: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+}
+
+/* Message list container */
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+/* Message bubble - received */
+.msg-recv {
+  align-self: flex-start;
+  background: linear-gradient(180deg, var(--msg-recv), rgba(255,255,255,0.01));
+  color: var(--msg-recv-text);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-bottom-left-radius: 6px;
+  max-width: 78%;
+  word-break: break-word;
+  box-shadow: 0 4px 10px rgba(2,6,23,0.4);
+  transform-origin: left;
+  animation: bubble-in .14s ease;
+}
+
+/* Message bubble - sent */
+.msg-sent {
+  align-self: flex-end;
+  background: linear-gradient(180deg, var(--msg-sent), rgba(255,255,255,0.02));
+  color: var(--msg-sent-text);
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-bottom-right-radius: 6px;
+  max-width: 78%;
+  word-break: break-word;
+  box-shadow: 0 6px 18px rgba(1,3,8,0.6);
+  transform-origin: right;
+  animation: bubble-in .14s ease;
+}
+
+/* Tiny meta under message (timestamp, status) */
+.msg-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  flex-shrink: 0;
+}
+
+/* Small avatar (in message row) */
+.avatar-sm {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* Input area */
+.chat-input {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+
+/* Textarea/input style */
+.input-field {
+  flex: 1;
+  min-height: 44px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 999px;
+  padding: 10px 14px;
+  resize: none;
+  border: 1px solid rgba(255,255,255,0.03);
+  outline: none;
+  color: var(--text);
+  transition: box-shadow .12s ease, transform .06s ease;
+}
+.input-field:focus {
+  box-shadow: 0 6px 20px rgba(37,99,235,0.12);
+  transform: translateY(-1px);
+}
+
+/* Button primary */
+.btn-primary {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform .08s ease;
+}
+.btn-primary:active { transform: translateY(1px) }
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+/* Tiny badges */
+.badge {
+  background: rgba(255,255,255,0.04);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Typing indicator */
+.typing {
+  font-size: 13px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.typing .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--muted);
+  border-radius: 999px;
+  opacity: 0.9;
+  animation: blink 1.2s infinite;
+}
+.typing .dot:nth-child(2) { animation-delay: .12s }
+.typing .dot:nth-child(3) { animation-delay: .24s }
+
+/* Animations */
+@keyframes blink {
+  0% { transform: translateY(0); opacity: .2; }
+  50% { transform: translateY(-4px); opacity: 1; }
+  100% { transform: translateY(0); opacity: .2; }
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(6px) scale(.995); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Responsive helpers */
+@media (max-width: 768px) {
+  .sidebar { display: none; }          /* hide sidebar on small screens (you can toggle) */
+  .chat-shell { flex-direction: column; }
+  .avatar { width: 36px; height: 36px; }
+}
+
+/* Accessibility: reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
