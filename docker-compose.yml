@@ -9,6 +9,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    env_file:
+      - ./chat-backend/.env
 
   backend:
     build: ./chat-backend
@@ -20,8 +22,7 @@ services:
     depends_on:
       - mongo
 
-  env_file:
-    - ./chat-backend/.env
+
 
   frontend:
     build: ./chat-frontend
