@@ -1,12 +1,19 @@
 # ---------- Build Stage ----------
-FROM node:18 AS builder
+FROM node:20 AS builder
 
-WORKDIR /src
+# Set working directory inside container
+WORKDIR /app
 
-COPY package*.json ./
+# Copy frontend package.json & package-lock.json from chat-frontend
+COPY chat-frontend/package*.json ./
+
+# Install dependencies
 RUN npm install
 
-COPY . .
+# Copy all frontend files
+COPY chat-frontend/ ./
+
+# Build the app
 RUN npm run build
 
 # ---------- Production Stage ----------
@@ -15,7 +22,7 @@ FROM nginx:alpine
 # Copy built frontend files to Nginx
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose the default Nginx port
+# Expose Nginx port
 EXPOSE 80
 
 # Start Nginx
