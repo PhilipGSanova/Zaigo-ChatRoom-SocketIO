@@ -20,6 +20,9 @@ services:
     depends_on:
       - mongo
 
+  env_file:
+    - ./chat-backend/.env
+
   frontend:
     build: ./chat-frontend
     container_name: chat-frontend
