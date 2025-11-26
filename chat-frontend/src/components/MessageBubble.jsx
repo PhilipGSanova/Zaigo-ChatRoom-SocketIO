@@ -1,7 +1,14 @@
-export default function MessageBubble({ msg }) {
+import React from "react";
+import "./MessageBubble.css";
+
+export default function MessageBubble({ msg, currentUserId }) {
+  const isSender = msg.sender.id === currentUserId;
+
   return (
-    <div className="p-3 bg-gray-700 rounded-xl w-max max-w-xl">
-      {msg}
+    <div className={`message-bubble ${isSender ? "sender" : "receiver"}`}>
+      <span className="username">{msg.sender.username}: </span>
+      <span className="text">{msg.text}</span>
+      <span className="timestamp">{new Date(msg.createdAt).toLocaleTimeString()}</span>
     </div>
-  )
+  );
 }

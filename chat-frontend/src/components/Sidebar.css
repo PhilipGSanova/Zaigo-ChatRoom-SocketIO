@@ -1,0 +1,48 @@
+/* Sidebar.css */
+
+.sidebar {
+  width: 16rem; /* 64 */
+  background-color: #1f2937; /* gray-800 */
+  padding: 1.5rem; /* 6 */
+  border-right: 1px solid #374151; /* gray-700 */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.sidebar h2 {
+  font-size: 1.25rem; /* xl */
+  font-weight: 700;
+  margin-bottom: 1rem; /* 4 */
+  color: #f9fafb; /* gray-50 */
+}
+
+.chat-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 2 */
+  overflow-y: auto;
+  padding-right: 0.25rem; /* for scrollbar spacing */
+}
+
+/* Individual chat item */
+.chat-item {
+  padding: 0.75rem; /* 3 */
+  background-color: #374151; /* gray-700 */
+  border-radius: 0.75rem; /* xl */
+  cursor: pointer;
+  color: #f9fafb; /* gray-50 */
+  transition: all 0.2s ease-in-out;
+}
+
+.chat-item:hover {
+  background-color: #4b5563; /* gray-600 */
+  transform: translateX(3px);
+}
+
+.chat-item.active {
+  background-color: #3b82f6; /* blue-500 */
+  color: white;
+}

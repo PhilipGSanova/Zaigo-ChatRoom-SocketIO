@@ -1,0 +1,132 @@
+.signup-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🔥 Animated Background Particles */
+.particles::before,
+.particles::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59,130,246,0.15), transparent);
+  animation: float 8s infinite ease-in-out;
+  border-radius: 50%;
+}
+
+.particles::after {
+  left: 60%;
+  top: 20%;
+  animation-duration: 10s;
+}
+
+.particles::before {
+  left: 10%;
+  top: 60%;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); opacity: 0.7; }
+  50% { transform: translateY(-30px); opacity: 1; }
+  100% { transform: translateY(0px); opacity: 0.7; }
+}
+
+/* Card */
+.signup-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  padding: 40px 36px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  position: relative;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.signup-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.signup-input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.signup-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 8px rgba(59,130,246,0.4);
+}
+
+/* Password toggle */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-icon {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Button */
+.signup-button {
+  width: 100%;
+  padding: 14px;
+  background: #10b981;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.signup-button:hover:not(:disabled) {
+  background: #059669;
+}
+
+.signup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.signup-footer {
+  text-align: center;
+  margin-top: 12px;
+  color: #cbd5e1;
+}
+
+.signup-link {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

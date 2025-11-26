@@ -1,32 +1,42 @@
-import { useState } from "react"
+import React from "react"
+import { useRef, useEffect, useState } from "react"
 import MessageBubble from "./MessageBubble"
+import "./ChatWindow.css"
 
-export default function ChatWindow({ messages, socket }) {
-  const [text, setText] = useState("")
+export default function ChatWindow({ messages, socket, currentRoom, user }) {
+  const [text, setText] = useState("");
+  const messagesEndRef = useRef(null);
 
   const sendMessage = () => {
     if (!text.trim()) return
-    socket.emit("message:send", text)
-    setText("")
-  }
+    socket.emit("send_message", { roomId: currentRoom, text });
+    setText("");
+  };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-900">
-        {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
+    <div className="chat-window">
+      <div className="chat-messages">
+        {messages.map((msg, i) =>  (
+          <MessageBubble 
+            key={i} 
+            msg={msg} 
+            className={msg.sender.id === user.id ? "self" : "other"}
+            />
+          ))}
       </div>
 
-      <div className="p-4 bg-gray-800 flex gap-2">
+      <div className="chat-input-container">
         <input
-          className="flex-1 p-3 bg-gray-700 rounded-xl focus:outline-none"
           placeholder="Type a message..."
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
         />
-        <button
-          className="bg-blue-600 hover:bg-blue-700 px-6 rounded-xl"
-          onClick={sendMessage}
-        >Send</button>
+        <button onClick={sendMessage}>Send</button>
       </div>
     </div>
   )
