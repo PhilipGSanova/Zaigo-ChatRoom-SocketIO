@@ -5,7 +5,7 @@ import "./Login.css"
 import "./Signup.css"
 
 async function loginRequest(identifier, password) {
-  const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/login', {
+  const res = await fetch((import.meta.env.VITE_API_URL || 'https://zaigo-chatroom-socketio.onrender.com') + '/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
