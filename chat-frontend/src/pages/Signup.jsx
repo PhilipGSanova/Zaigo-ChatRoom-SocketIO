@@ -4,7 +4,7 @@ import toast, { Toaster } from "react-hot-toast"
 import "./Signup.css"
 
 async function signupRequest(fullName, email, username, password) {
-  const res = await fetch((import.meta.env.VITE_API_URL || "https://zaigo-chatroom-socketio.onrender.com") + "/api/auth/register", {
+  const res = await fetch((import.meta.env.VITE_API_URL || "https://zaigo-chatroom-socketio-backend.onrender.com") + "/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

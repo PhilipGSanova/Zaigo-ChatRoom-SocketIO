@@ -7,7 +7,7 @@ export default function useSocket(token) {
     useEffect(() => {
         if (!token) return;
 
-        const newSocket = io('https://zaigo-chatroom-socketio.onrender.com', {
+        const newSocket = io('https://zaigo-chatroom-socketio-frontend.onrender.com', {
             auth: { token },
             withCredentials: true,
         });
