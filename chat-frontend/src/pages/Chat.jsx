@@ -9,7 +9,7 @@ export default function Chat() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [currentRoom, setCurrentRoom] = useState("6926acd1c3a5bd33594fce1b");
+  const [currentRoom, setCurrentRoom] = useState("69292e93d4ac2dfa35e720db");
 
   async function loadMessages(roomId) {
     try {
