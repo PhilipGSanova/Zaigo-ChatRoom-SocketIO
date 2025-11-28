@@ -9,6 +9,13 @@
   font-size: 0.95rem;
 }
 
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+
 /* Messages from the logged-in user */
 .message-bubble.sender {
   background-color: #3b82f6; /* blue-500 */
