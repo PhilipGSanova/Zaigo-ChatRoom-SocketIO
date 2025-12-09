@@ -1,79 +1,84 @@
 import React, { useEffect, useState } from "react";
 import { connectSocket } from "../socket";
-import ChatWindow from "../components/ChatWindow";
 import Sidebar from "../components/Sidebar";
+import ChatWindow from "../components/ChatWindow";
 import "./Chat.css";
 
 export default function Chat() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+
   const [socket, setSocket] = useState(null);
+  const [currentRoom, setCurrentRoom] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [currentRoom, setCurrentRoom] = useState("69292e93d4ac2dfa35e720db");
 
-  async function loadMessages(roomId) {
-    try {
-      const res = await fetch(
-        `https://zaigo-chatroom-socketio-backend.onrender.com/api/messages/${roomId}`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const data = await res.json();
-      return data.messages || [];
-    } catch (err) {
-      console.error("Failed to load messages:", err);
-      return [];
-    }
-  }
-
-  // Initialize socket
+  // Initialize socket connection
   useEffect(() => {
     if (!token) return;
+
     const s = connectSocket(token);
     setSocket(s);
+
     return () => s.disconnect();
   }, [token]);
 
-  // Join room + load history + socket events
+  // Load messages & handle socket events whenever currentRoom changes
   useEffect(() => {
     if (!socket || !currentRoom) return;
 
-    // Load old messages
-    loadMessages(currentRoom).then((msgs) => {
-      setMessages(msgs);
-    });
+    // Fetch previous messages from backend
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/messages/${currentRoom._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+        setMessages(data.messages || []);
+      } catch (err) {
+        console.error("Failed to load messages:", err);
+        setMessages([]);
+      }
+    };
 
-    // Join room
-    socket.emit("join_room", { roomId: currentRoom });
+    fetchMessages();
+
+    // Join the room via socket
+    socket.emit("join_room", { roomId: currentRoom._id });
 
     // Listen for new messages
-    const handleNewMessage = (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    };
+    const handleNewMessage = (msg) => setMessages((prev) => [...prev, msg]);
     socket.on("new_message", handleNewMessage);
 
+    // Cleanup on room change/unmount
     return () => {
       socket.off("new_message", handleNewMessage);
-      socket.emit("leave_room", { roomId: currentRoom });
+      socket.emit("leave_room", { roomId: currentRoom._id });
     };
-  }, [socket, currentRoom]);
+  }, [socket, currentRoom, token]);
 
-  const handleRoomChange = (roomId) => {
-    if (!socket) return;
-    socket.emit("leave_room", { roomId: currentRoom });
-    setCurrentRoom(roomId);
+  // Handle room selection from Sidebar
+  const handleRoomChange = (roomId, roomObj) => {
+    if (!roomObj) return;
+    setCurrentRoom(roomObj);
+    setMessages([]); // will reload messages in useEffect
   };
 
   return (
     <div className="chat-container">
       <Sidebar currentRoom={currentRoom} onRoomChange={handleRoomChange} />
-      <ChatWindow messages={messages} socket={socket} currentRoom={currentRoom} user={user} />
+      <ChatWindow
+        messages={messages}
+        socket={socket}
+        currentRoom={currentRoom}
+        user={user}
+      />
     </div>
   );
 }

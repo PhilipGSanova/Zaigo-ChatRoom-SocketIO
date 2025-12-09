@@ -1,16 +1,19 @@
 import React, { useState } from "react"
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import "./Login.css"
 import "./Signup.css"
 
 async function loginRequest(identifier, password) {
-  const res = await fetch((import.meta.env.VITE_API_URL || 'https://zaigo-chatroom-socketio-backend.onrender.com') + '/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ identifier, password })
-  })
+  const res = await fetch(
+    (import.meta.env.VITE_API_URL || 'https://zaigo-chatroom-socketio-backend.onrender.com') + '/api/auth/login',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ identifier, password })
+    }
+  )
+
   const data = await res.json()
   if (!res.ok) throw new Error(data.message || 'Login failed')
   return data
@@ -27,10 +30,14 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
     try {
       const data = await loginRequest(identifier, password)
+
+      // save token & user
       if (data.token) localStorage.setItem('token', data.token)
       if (data.user) localStorage.setItem('user', JSON.stringify(data.user))
+
       navigate('/chat')
     } catch (err) {
       setError(err.message)

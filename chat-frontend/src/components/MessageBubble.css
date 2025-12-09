@@ -4,7 +4,8 @@
   max-width: 75%;
   word-wrap: break-word;
   margin-bottom: 0.5rem;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
   position: relative;
   font-size: 0.95rem;
 }
@@ -12,9 +13,21 @@
 .chat-messages {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.5rem;
 }
 
+.message-bubble .username {
+  font-size: 0.8rem;
+  font-weight: bold;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.message-bubble .text {
+  display: block;
+  margin-bottom: 0.25rem;
+}
 
 /* Messages from the logged-in user */
 .message-bubble.sender {
@@ -22,6 +35,10 @@
   color: white;
   margin-left: auto;
   border-bottom-right-radius: 0.25rem;
+}
+
+.message-bubble.sender .username {
+  color: #c3dafe;
 }
 
 /* Messages from other users */
@@ -32,11 +49,29 @@
   border-bottom-left-radius: 0.25rem;
 }
 
+.message-bubble.receiver .username {
+  color: #9ca3af;
+}
 
 .message-bubble span.timestamp {
   font-size: 0.7rem;
   color: #9ca3af; /* gray-400 */
   position: absolute;
-  bottom: -1.2rem;
+  bottom: -1rem;
   right: 0.5rem;
+
+  white-space: nowrap; /* Forces the text to stay on one line */
+  width: max-content;
+}
+
+.message-bubble.sender span.timestamp {
+  left: unset;
+  right: 0.5rem;
+}
+
+.message-bubble .message-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
 }
