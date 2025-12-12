@@ -1,72 +1,112 @@
-const { Server } = require('socket.io');
-const jwt = require('jsonwebtoken');
-const Message = require('./src/models/Message');
-const Room = require('./src/models/Room');
+const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
+const Message = require("./src/models/Message");
 
-const jwtSecret = process.env.JWT_SECRET || 'changeme';
+const jwtSecret = process.env.JWT_SECRET || "changeme";
 let io;
 
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: 'https://zaigo-chatroom-socketio-backend.onrender.com',
-      methods: ['GET','POST'],
-      credentials: true
-    }
+      origin: "https://zaigo-chatroom-socketio-frontend.onrender.com",
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
   });
 
+  // Auth middleware
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
-    if (!token) return next(new Error('Authentication error'));
+    if (!token) return next(new Error("Authentication error"));
 
     try {
       socket.user = jwt.verify(token, jwtSecret);
       next();
     } catch {
-      next(new Error('Authentication error'));
+      next(new Error("Authentication error"));
     }
   });
 
-  io.on('connection', (socket) => {
-    console.log('Connected:', socket.user.username);
-    socket.join(socket.user.id); // personal room
+  io.on("connection", (socket) => {
+    console.log("Connected:", socket.user.username);
 
-    socket.on('join_room', ({ roomId }) => {
+    // Join personal room
+    socket.join(socket.user.id);
+
+    // Join chatroom
+    socket.on("join_room", ({ roomId }) => {
       socket.join(roomId);
-      socket.to(roomId).emit('user_joined', { userId: socket.user.id, username: socket.user.username });
     });
 
-    socket.on('leave_room', ({ roomId }) => {
+    // Leave chatroom
+    socket.on("leave_room", ({ roomId }) => {
       socket.leave(roomId);
-      socket.to(roomId).emit('user_left', { userId: socket.user.id, username: socket.user.username });
     });
 
-    socket.on('send_message', async ({ roomId, text }) => {
+    // ---------------- TEXT MESSAGE ----------------
+    socket.on("send_message", async ({ roomId, text }) => {
       if (!roomId || !text) return;
+
       try {
-        const message = await Message.create({ room: roomId, sender: socket.user.id, text });
-        io.to(roomId).emit('new_message', { _id: message._id, text, roomId, sender: socket.user, createdAt: message.createdAt });
+        const message = await Message.create({
+          room: roomId,
+          sender: socket.user.id,
+          text,
+        });
+
+        io.to(roomId).emit("new_message", {
+          ...message.toObject(),
+          sender: socket.user,
+        });
       } catch (err) {
-        console.error(err);
+        console.error("Text message error:", err);
       }
     });
 
+    // ---------------- VOICE MESSAGE ----------------
     socket.on("send_voice_message", async ({ roomId, audio }) => {
-      const message = await Message.create({
-        room: roomId,
-        audio,
-        sender: socket.user.id,
-        createdAt: new Date()
-      });
-      io.to(roomId).emit('new_voice_message', { _id: message._id, audio, roomId, sender: socket.user, createdAt: message.createdAt });
+      if (!roomId || !audio) return;
+
+      try {
+        const message = await Message.create({
+          room: roomId,
+          sender: socket.user.id,
+          audio,
+        });
+
+        io.to(roomId).emit("new_voice_message", {
+          ...message.toObject(),
+          sender: socket.user,
+        });
+      } catch (err) {
+        console.error("Voice message error:", err);
+      }
     });
 
-    socket.on('typing', ({ roomId, isTyping }) => {
-      socket.to(roomId).emit('typing_status', { roomId, userId: socket.user.id, username: socket.user.username, isTyping });
+    // ---------------- IMAGE MESSAGE ----------------
+    socket.on("send_image_message", async ({ roomId, fileData }) => {
+      if (!roomId || !fileData) return;
+
+      try {
+        const message = await Message.create({
+          room: roomId,
+          sender: socket.user.id,
+          attachments: [fileData],
+        });
+
+        io.to(roomId).emit("new_image_message", {
+          ...message.toObject(),
+          sender: socket.user,
+        });
+      } catch (err) {
+        console.error("Image message error:", err);
+      }
     });
 
-    socket.on('disconnect', () => console.log('Disconnected:', socket.user?.username || socket.id));
+    socket.on("disconnect", () => {
+      console.log("Disconnected:", socket.user.username);
+    });
   });
 }
 
-module.exports = { initSocket };
+module.exports = { initSocket, getIO: () => io };

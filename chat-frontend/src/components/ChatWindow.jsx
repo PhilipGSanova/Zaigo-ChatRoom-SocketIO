@@ -9,25 +9,34 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const imageInputRef = useRef(null);
-  const token = localStorage.getItem("token");
 
-  // Scroll to bottom when messages change
+  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  if (!currentRoom) {
-    return <div className="chat-window">Select a room or friend to start chatting</div>;
-  }
+  if (!currentRoom) return <div className="chat-window">Select a room to start chatting</div>;
 
-  // Send text message
+  // ---------------- TEXT MESSAGE ----------------
   const sendMessage = () => {
     if (!text.trim()) return;
+
+    const tempMessage = {
+      _id: Date.now(),
+      sender: { _id: user._id, fullName: user.fullName },
+      text,
+      attachments: [],
+      createdAt: new Date(),
+    };
+
+    addMessage(tempMessage); // show instantly
+
     socket.emit("send_message", { roomId: currentRoom._id, text });
+
     setText("");
   };
 
-  // Toggle voice recording
+  // ---------------- VOICE MESSAGE ----------------
   const toggleRecording = async () => {
     if (!recording) {
       try {
@@ -36,9 +45,7 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
-        mediaRecorder.ondataavailable = (event) => {
-          audioChunksRef.current.push(event.data);
-        };
+        mediaRecorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
 
         mediaRecorder.onstop = () => {
           const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
@@ -47,34 +54,19 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
           reader.onloadend = () => {
             const base64Audio = reader.result;
 
-            // Emit to server
             socket.emit("send_voice_message", {
               roomId: currentRoom._id,
               audio: base64Audio,
             });
-
-            // Optimistically add to chat immediately
-            const tempMessage = {
-              _id: Date.now(),
-              sender: { _id: user._id, fullName: user.fullName },
-              text: null,
-              attachments: [
-                { url: base64Audio, filename: "voice-message.webm", mime: "audio/webm" },
-              ],
-              createdAt: new Date(),
-            };
-
-            if (typeof addMessage === "function") {
-              addMessage(tempMessage);
-            }
           };
+
           reader.readAsDataURL(audioBlob);
         };
 
         mediaRecorder.start();
         setRecording(true);
       } catch (err) {
-        console.error("Mic access denied:", err);
+        console.error("Mic blocked:", err);
       }
     } else {
       mediaRecorderRef.current?.stop();
@@ -82,60 +74,66 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
     }
   };
 
-  // Handle image upload
-  // inside ChatWindow component
+  // ---------------- IMAGE MESSAGE ----------------
+  console.log("imageInputRef current:", imageInputRef.current);
+
   const handleImageChange = async (e) => {
-    console.log("Triggered!");
     const file = e.target.files[0];
     if (!file) return;
 
+    const tempUrl = URL.createObjectURL(file);
+
+    const tempMessage = {
+      _id: Date.now(),
+      sender: { _id: user._id, fullName: user.fullName },
+      text: null,
+      attachments: [{ url: tempUrl, filename: file.name, mime: file.type }],
+      createdAt: new Date(),
+    };
+
+    addMessage(tempMessage); // show instantly
+
+    // Upload to backend
+    console.log("Uploading image, user:", user);
+
     const formData = new FormData();
     formData.append("roomId", currentRoom._id);
-    console.log("USER OBJECT BEFORE UPLOAD =", user);
-    if (!user || (!user._id && !user.id)) {
-      console.error("User not ready yet! Cannot send image.");
-      return;
-    }
     formData.append("senderId", user.id);
     formData.append("attachment", file);
 
-    console.log("USER OBJECT =", user);
-
-
     try {
       const token = localStorage.getItem("token");
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/image-upload/image`, {
         method: "POST",
-        credentials: "include", // IMPORTANT
-        headers: {
-          Authorization: `Bearer ${token}`,   // ← ADD THIS
-        },
-        body: formData,         // do NOT set any headers
+        credentials: "include",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || err.message || "Upload failed");
-      }
-      const message = await res.json();
-      // addMessage should append to local UI state instantly
-      if (typeof addMessage === "function") addMessage(message);
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const serverMessage = await res.json();
+
+      // Replace temp message with real message from server
+      addMessage(serverMessage, tempMessage._id);
+
     } catch (err) {
-      console.error("Image upload failed:", err);
+      console.error("Image upload error:", err);
     }
   };
-
 
   return (
     <div className="chat-window">
       <div className="chat-header">
         {currentRoom.isPrivate
-          ? currentRoom.members.find((m) => m._id !== user._id)?.fullName || "Direct Chat"
+          ? currentRoom.members.find((m) => m._id !== user.id)?.fullName
           : currentRoom.name}
       </div>
 
       <div className="chat-messages">
         {messages.map((msg, i) => (
-          <MessageBubble key={i} msg={msg} currentUserId={user?._id || user?.id} />
+          <MessageBubble key={i} msg={msg} currentUserId={user?.id} />
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -149,7 +147,6 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
         />
         <button onClick={sendMessage}>Send</button>
 
-        {/* Hidden file input for images */}
         <input
           type="file"
           accept="image/*"
@@ -159,11 +156,10 @@ export default function ChatWindow({ messages, socket, currentRoom, user, addMes
         />
         <button onClick={() => imageInputRef.current?.click()}>📷</button>
 
-        {/* Voice recording button */}
         <button className="mic-btn" onClick={toggleRecording}>
           {recording ? "⏹️" : "🎤"}
         </button>
-        {recording && <span style={{ color: "red", marginLeft: "10px" }}>Recording…</span>}
+        {recording && <span style={{ color: "red" }}>Recording…</span>}
       </div>
     </div>
   );

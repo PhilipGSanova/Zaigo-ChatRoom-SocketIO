@@ -21,19 +21,14 @@
   font-weight: bold;
   opacity: 0.8;
   margin-bottom: 0.25rem;
-  display: block;
 }
 
-.message-bubble .text {
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-/* Messages from the logged-in user */
+/* SENDER (My messages → RIGHT) */
 .message-bubble.sender {
-  background-color: #3b82f6; /* blue-500 */
+  background-color: #3b82f6;
   color: white;
   margin-left: auto;
+  align-self: flex-end;
   border-bottom-right-radius: 0.25rem;
 }
 
@@ -41,11 +36,12 @@
   color: #c3dafe;
 }
 
-/* Messages from other users */
+/* RECEIVER (Other users → LEFT) */
 .message-bubble.receiver {
-  background-color: #374151; /* gray-700 */
+  background-color: #374151;
   color: #f9fafb;
   margin-right: auto;
+  align-self: flex-start;
   border-bottom-left-radius: 0.25rem;
 }
 
@@ -53,20 +49,22 @@
   color: #9ca3af;
 }
 
+/* Timestamp */
 .message-bubble span.timestamp {
   font-size: 0.7rem;
-  color: #9ca3af; /* gray-400 */
+  opacity: 0.7;
   position: absolute;
   bottom: -1rem;
-  right: 0.5rem;
-
-  white-space: nowrap; /* Forces the text to stay on one line */
-  width: max-content;
 }
 
+/* Sender timestamp (right) */
 .message-bubble.sender span.timestamp {
-  left: unset;
   right: 0.5rem;
+}
+
+/* Receiver timestamp (left) */
+.message-bubble.receiver span.timestamp {
+  left: 0.5rem;
 }
 
 .message-bubble .message-image {

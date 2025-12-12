@@ -12,7 +12,7 @@ export default function Chat() {
   const [currentRoom, setCurrentRoom] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  // Initialize socket connection
+  // ------------------- INIT SOCKET -------------------
   useEffect(() => {
     if (!token) return;
 
@@ -22,12 +22,12 @@ export default function Chat() {
     return () => s.disconnect();
   }, [token]);
 
-  // Load messages & handle socket events whenever currentRoom changes
+  // ------------------- LOAD + LISTEN -------------------
   useEffect(() => {
     if (!socket || !currentRoom) return;
 
-    // Fetch previous messages from backend
-    const fetchMessages = async () => {
+    // Load old messages
+    const loadMessages = async () => {
       try {
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/api/messages/${currentRoom._id}`,
@@ -39,45 +39,72 @@ export default function Chat() {
             credentials: "include",
           }
         );
+
         const data = await res.json();
         setMessages(data.messages || []);
       } catch (err) {
-        console.error("Failed to load messages:", err);
+        console.error("Failed fetching messages:", err);
         setMessages([]);
       }
     };
 
-    fetchMessages();
+    loadMessages();
 
-    // Join the room via socket
+    // JOIN room
     socket.emit("join_room", { roomId: currentRoom._id });
 
-    // Listen for new messages
-    const handleNewMessage = (msg) => setMessages((prev) => [...prev, msg]);
-    socket.on("new_message", handleNewMessage);
+    // ------------------- SOCKET LISTENERS -------------------
+    const handleNewMessage = (msg) => {
+      setMessages((prev) => {
+        // Prevent duplicate messages if temp message already exists
+        if (prev.some((m) => m._id.toString() === msg._id.toString())) return prev;
+        return [...prev, msg];
+      });
+    };
 
-    // Cleanup on room change/unmount
+    socket.on("new_message", handleNewMessage);
+    socket.on("new_voice_message", handleNewMessage);
+    socket.on("new_image_message", handleNewMessage);
+
     return () => {
       socket.off("new_message", handleNewMessage);
+      socket.off("new_voice_message", handleNewMessage);
+      socket.off("new_image_message", handleNewMessage);
+
       socket.emit("leave_room", { roomId: currentRoom._id });
     };
   }, [socket, currentRoom, token]);
 
-  // Handle room selection from Sidebar
+  // ------------------- ADD MESSAGE TO UI -------------------
+  const addMessage = (newMessage, replaceTempId = null) => {
+    setMessages((prev) => {
+      if (replaceTempId) {
+        // Replace temporary message with server message
+        return prev.map((m) => (m._id === replaceTempId ? newMessage : m));
+      }
+      // Prevent duplicates (if server already sent the message via socket)
+      if (prev.some((m) => m._id.toString() === newMessage._id.toString())) return prev;
+      return [...prev, newMessage];
+    });
+  };
+
+  // ------------------- ROOM SWITCH -------------------
   const handleRoomChange = (roomId, roomObj) => {
     if (!roomObj) return;
     setCurrentRoom(roomObj);
-    setMessages([]); // will reload messages in useEffect
+    setMessages([]); // reset, will reload
   };
 
   return (
     <div className="chat-container">
       <Sidebar currentRoom={currentRoom} onRoomChange={handleRoomChange} />
+
       <ChatWindow
         messages={messages}
         socket={socket}
         currentRoom={currentRoom}
         user={user}
+        addMessage={addMessage}
       />
     </div>
   );
